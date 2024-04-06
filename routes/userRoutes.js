@@ -13,7 +13,7 @@ router.post("/signup", async (req, res) => {
     console.log("data saved");
 
     const payload = {
-      id: response.id,
+      id: response.id
     };
     console.log(JSON.stringify(payload));
     const token = generateToken(payload);
@@ -35,7 +35,7 @@ router.post("/login", async (req, res) => {
     });
 
     if (!user || !(await user.comparePassword(password))) {
-      return res.status(401).json({ error: "Invalid username or password" });
+      return res.status(401).json({ error: "Invalid Aadhar Card Number or password" });
     }
 
     const payload = {
@@ -52,7 +52,7 @@ router.post("/login", async (req, res) => {
 router.get("/profile", jwtAuthMiddleware, async (req, res) => {
   try {
     const userData = req.user;
-    const userID = userData.id;
+    const userId = userData.id;
     const user = await User.findById(userId);
     res.status(200).json({ user });
   } catch (err) {
@@ -61,7 +61,7 @@ router.get("/profile", jwtAuthMiddleware, async (req, res) => {
   }
 });
 
-router.put('/profile/password',async(req,res)=>{
+router.put('/profile/password',jwtAuthMiddleware,async(req,res)=>{
   try{
     const userId = req.user.id;
      const {currentPassword, newPassword} = req.body
@@ -84,4 +84,6 @@ router.put('/profile/password',async(req,res)=>{
     res.status(500).json({error:'Internal Server Error'})
   }
 })
+
+module.exports =router;
 
