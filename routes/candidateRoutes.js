@@ -7,16 +7,18 @@ const Candidate = require("../models/candidate");
 const checkAdminRole = async (userID) => {
   try {
     const user = await User.findById(userID);
-    return user.role === "admin";
+    if(user.role === 'admin'){
+      return true;
+    }
   } catch (err) {
     return false;
   }
 };
 
-router.post("/", async (req, res) => {
+router.post("/", jwtAuthMiddleware,  async (req, res) => {
   try {
-    if (!checkAdminRole(req.user.id)) {
-      return res.status(404).json({ message: "User has not admin role" });
+    if (! await checkAdminRole(req.user.id)) {
+      return res.status(404).json({ message: "User does  not have admin role" });
     }
     const data = req.body;
 
@@ -31,7 +33,7 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.put('/:candidateID',async(req,res)=>{
+router.put('/:candidateID', jwtAuthMiddleware,async(req,res)=>{
     try{
         if (!checkAdminRole(req.user.id)) {
             return res.status(403).json({ message: "User does not have admin role" });
@@ -58,7 +60,7 @@ router.put('/:candidateID',async(req,res)=>{
 })
 
 
-router.delete('/:candidateID',async(req,res)=>{
+router.delete('/:candidateID', jwtAuthMiddleware,async(req,res)=>{
     try{
         if (!checkAdminRole(req.user.id)) {
             return res.status(403).json({ message: "User does  not have admin role" });
@@ -67,10 +69,8 @@ router.delete('/:candidateID',async(req,res)=>{
           const candidateID = req.params.candidateID;
 
 
-          const response = await personalbar.findByIdAndDelete(candidateID,updatedCandidateData,{
-            new:true,
-            runValidators:true,
-          })
+          const response = await Candidate.findByIdAndDelete(candidateID);
+           
 
           if(!response){
             return res.status(404).json({error:'Candidate not found'});
